@@ -1,8 +1,11 @@
 package com.yy.gmall.product.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yy.gmall.model.product.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Yu
@@ -52,5 +55,111 @@ public interface ManageService {
      */
     List<BaseAttrValue> getAttrValueList(Long attrId);
 
+    /**
+     * 品牌列表分页
+     */
+    IPage<BaseTrademark> getBaseTrademarkPage(Long page, Long limit);
 
+    /**
+     * 获取spu分页列表
+     */
+    IPage<SpuInfo> getSpuInfoPage(Long page, Long limit, Long category3Id);
+    /**
+     * 获取销售属性
+     */
+    List<BaseSaleAttr> getBaseSaleAttrList();
+    /**
+     * 获取品牌属性
+     */
+    List<BaseTrademark> getTrademarkList();
+    /**
+     * 品牌类别添加
+     */
+    void saveBaseTrademark(BaseTrademark baseTrademark);
+
+    /**
+     * 根据分类3级id获取品牌类别
+     */
+    List<BaseTrademark> findTrademarkListBycategory3Id(Long category3Id);
+
+    /**
+     * 添加spu
+     */
+    void saveSpuInfo(SpuInfo spuInfo);
+
+    /**
+     * 按spu_id查询图片
+     */
+    List<SpuImage> findSpuImageListBySpuId(Long spuId);
+
+    /**
+     * 按spu_id查询spuAttrValue
+     */
+    List<SpuSaleAttr> findSpuSaleAttrListBySpuId(Long spuId);
+
+    /**
+     * 保存sku
+     */
+    void saveSkuInfo(SkuInfo skuInfo);
+
+
+    /**
+     * sku查询分页
+     */
+    IPage<SkuInfo> findSkuInfoPage(Long page, Long limit);
+
+    /**
+     * 上架
+     * @param skuId
+     */
+    void onSaleBySkuId(Long skuId);
+
+    /**
+     * 下架
+     * @param skuId
+     */
+    void cancelSaleBySkuId(Long skuId);
+
+    /**
+     * 根据SkuId 来获取SkuInfo数据
+     * @param skuId
+     * @return
+     */
+    SkuInfo getSkuInfoBySkuId(Long skuId);
+
+    /**
+     * 获取skuInfo价钱
+     * @param skuId
+     * @return
+     */
+    BigDecimal getPriceBySkuId(Long skuId);
+
+    /**
+     * 根据category3Id查询虚表
+     * @param category3Id
+     * @return
+     */
+    BaseCategoryView getCategoryByCategory3Id(Long category3Id);
+
+    /**
+     * 获取销售属性和销售属性值
+     * @param skuId
+     * @param spuId
+     * @return
+     */
+    List<SpuSaleAttr> getSpuSaleAttrListBySkuIdAndSpuId(Long skuId,Long spuId);
+
+    /**
+     * 根据spuId  查询skuId  和 valueIds(将sale_attr_value_id拼接)
+     * @param spuId
+     * @return
+     */
+    Map getValueIdsAndSkuIdToMapBySpuId(Long spuId);
+
+    /**
+     * 根据skuId查询平台属性名称和平台属性值名称
+     * @param skuId
+     * @return
+     */
+    List<BaseAttrInfo> getBaseAttrInfoBySkuId(Long skuId);
 }

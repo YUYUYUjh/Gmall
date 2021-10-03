@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>service_product</module>
+        <module>service_item</module>
     </modules>
 
     <dependencies>
@@ -84,4 +85,14 @@
                </dependency>-->
 
     </dependencies>
+
+    <build>
+        <finalName>service_product</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

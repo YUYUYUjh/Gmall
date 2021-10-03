@@ -12,3 +12,7 @@ spring:
         file-extension: yml
         group: DEFAULT_GROUP  #配置列表group
         namespace: 9329d08a-4058-424c-9cb9-1df8aa250847 #命名空间Id
+        ext-config:
+          - dataId: application-config.yml
+            group: DEFAULT_GROUP
+            refresh: true

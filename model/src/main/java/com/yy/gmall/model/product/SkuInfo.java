@@ -22,6 +22,8 @@ import java.util.List;
 @TableName("sku_info")
 public class SkuInfo extends BaseEntity {
 
+	public static final Integer ONSALE = 1; //上架常量
+	public static final Integer CANCELSALE = 0;//下架常量
 
     public SkuInfo(){}
 	public SkuInfo(Long skuId){
