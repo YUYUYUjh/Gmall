@@ -2,6 +2,7 @@ package com.yy.gmall.item.controller;
 
 import com.yy.gmall.common.result.Result;
 import com.yy.gmall.item.service.ItemService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,10 +18,12 @@ import java.util.Map;
 @RequestMapping("/api/item")
 public class ItemApiController {
 
+    @Autowired
     private ItemService itemService;
     //定义个远程调用的接口
     @GetMapping("{skuId}")
-    public Map getItemBySkuId(@PathVariable Long skuId){
-        return itemService.getItem(skuId);
+    public Map<String, Object> getItemBySkuId(@PathVariable Long skuId){
+        Map<String, Object> map = itemService.getItem(skuId);
+        return map;
     }
 }

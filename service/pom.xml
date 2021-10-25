@@ -14,9 +14,19 @@
     <modules>
         <module>service_product</module>
         <module>service_item</module>
+        <module>service_list</module>
+        <module>service_user</module>
+        <module>service_cart</module>
+        <module>service_order</module>
+        <module>service_mq</module>
     </modules>
 
     <dependencies>
+        <dependency>
+            <groupId>com.yy.gmall</groupId>
+            <artifactId>web_util</artifactId>
+            <version>1.0</version>
+        </dependency>
         <!--依赖服务的工具类-->
         <dependency>
             <groupId>com.yy.gmall</groupId>

@@ -24,7 +24,7 @@ public class SearchParam {
     private String[] props;//页面提交的数组
 
     private Integer pageNo = 1;//分页信息
-    private Integer pageSize = 3; // 每页默认显示的条数
+    private Integer pageSize = 5; // 每页默认显示的条数
 
 
 }

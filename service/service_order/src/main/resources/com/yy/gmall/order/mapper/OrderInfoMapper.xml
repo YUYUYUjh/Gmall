@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yy.gmall.order.mapper.OrderInfoMapper">
+    <resultMap id="OrderInfoMap" type="com.yy.gmall.model.order.OrderInfo" autoMapping="true">
+        <!--主键-->
+        <id property="id" column="id"></id>
+        <collection property="orderDetailList" ofType="com.yy.gmall.model.order.OrderDetail"
+                    autoMapping="true" column="{orderId = id}" select="selectOrderDetailByOrderId">
+
+        </collection>
+    </resultMap>
+
+    <!-- 用于select查询公用抽取的列 -->
+    <sql id="orderColumns">
+      id,consignee,consignee_tel,total_amount,order_status,user_id,payment_way,delivery_address,order_comment,out_trade_no,trade_body,create_time,expire_time,process_status,tracking_no,parent_order_id,img_url
+   </sql>
+
+    <sql id="orderDetailColumns">
+      id,order_id,sku_id,sku_name,img_url,order_price,sku_num,create_time,source_type,source_id,split_total_amount,split_activity_amount,split_coupon_amount
+   </sql>
+
+    <select id="selectPageByUserId" resultMap="OrderInfoMap">
+        select <include refid="orderColumns" />
+        from order_info
+        where user_id = #{userId}
+        and order_status not in('CLOSED', 'SPLIT')
+        and is_deleted = 0
+        order by id desc
+    </select>
+
+    <select id="selectOrderDetailByOrderId" resultType="com.yy.gmall.model.order.OrderDetail">
+        select <include refid="orderDetailColumns" />
+        from order_detail
+        where order_id = #{orderId}
+        and is_deleted = 0
+        order by id desc
+    </select>
+</mapper>

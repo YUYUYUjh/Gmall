@@ -1,9 +1,7 @@
 package com.yy.gmall.product.api;
 
-import com.yy.gmall.model.product.BaseAttrInfo;
-import com.yy.gmall.model.product.BaseCategoryView;
-import com.yy.gmall.model.product.SkuInfo;
-import com.yy.gmall.model.product.SpuSaleAttr;
+import com.yy.gmall.model.list.SearchAttr;
+import com.yy.gmall.model.product.*;
 import com.yy.gmall.product.service.ManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,7 +60,7 @@ public class ProductApiController {
     }
 
     /**
-     * 获取销售属性和销售属性值
+     * 获取销售属性和销售属性值+选中
      * @param skuId
      * @param spuId
      * @return
@@ -93,4 +91,35 @@ public class ProductApiController {
     public List<BaseAttrInfo> getAttrList(@PathVariable Long skuId){
         return manageService.getBaseAttrInfoBySkuId(skuId);
     }
+
+    /**
+     * 首页商品分类信息
+     */
+    @GetMapping("/inner/getCategoryList")
+    public List<Map> getCategoryList(){
+        List<Map> list = manageService.getCategoryList();
+        return list;
+    }
+
+    /**
+     * 根据品牌id获取品牌数据
+     * @param tmId
+     * @return
+     */
+    @GetMapping("/inner/getTrademark/{tmId}")
+    public BaseTrademark getTrademark(@PathVariable("tmId")Long tmId){
+        return manageService.getTrademarkByTmId(tmId);
+    }
+
+    /**
+     * 根据skuId获取平台属性和平台属性值
+     * 用于填充es数据
+     */
+    @GetMapping("/inner/getSearchAttrBySkuId/{skuId}")
+    public List<SearchAttr> getSearchAttrBySkuId(@PathVariable Long skuId){
+        List<SearchAttr> searchAttrList = manageService.getSearchAttrBySkuId(skuId);
+        return searchAttrList;
+    }
+
+
 }

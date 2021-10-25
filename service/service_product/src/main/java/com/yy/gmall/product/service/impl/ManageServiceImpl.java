@@ -1,21 +1,31 @@
 package com.yy.gmall.product.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yy.gmall.common.cache.GmallCache;
+import com.yy.gmall.common.constant.RedisConst;
+import com.yy.gmall.model.list.SearchAttr;
 import com.yy.gmall.model.product.*;
 import com.yy.gmall.product.mapper.*;
 import com.yy.gmall.product.service.ManageService;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+import java.util.stream.Collectors;
 
 /**
  * @author Yu
@@ -75,6 +85,17 @@ public class ManageServiceImpl implements ManageService {
     @Autowired
     private BaseCategoryViewMapper baseCategoryViewMapper;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @Autowired
+    private SearchAttrMapper searchAttrMapper;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 获取一级分类
@@ -198,7 +219,6 @@ public class ManageServiceImpl implements ManageService {
     @Override
     public List<BaseSaleAttr> getBaseSaleAttrList() {
         return baseSaleAttrMapper.selectList(null);
-
     }
     /**
      * 获取品牌属性
@@ -361,6 +381,9 @@ public class ManageServiceImpl implements ManageService {
         skuInfo.setId(skuId);
         skuInfo.setIsSale(skuInfo.ONSALE);
         skuInfoMapper.updateById(skuInfo);
+
+        //
+
     }
 
     /**
@@ -381,16 +404,77 @@ public class ManageServiceImpl implements ManageService {
      * @return
      */
     @Override
+    @GmallCache(prefix = "sku:")
     public SkuInfo getSkuInfoBySkuId(Long skuId) {
-        //1.获取skuInfo信息
+        //return getSkuInfoRedisson(skuId);
+        return getSkuInfoDB(skuId);
+    }
+
+    private SkuInfo getSkuInfoDB(Long skuId) {
+        //获取skuInfo
         SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
+        if (skuInfo!=null){
+            List<SkuImage> skuImageList = skuImageMapper.selectList(new QueryWrapper<SkuImage>().eq("sku_id", skuId));
+            skuInfo.setSkuImageList(skuImageList);
 
-        //2.获取skuImage
-        List<SkuImage> skuImageList = skuImageMapper.selectList(new QueryWrapper<SkuImage>().eq("sku_id", skuId));
+        }
+        return skuInfo;
+    }
 
-        //将image塞入skuinfo
-        skuInfo.setSkuImageList(skuImageList);
-        return null;
+    private SkuInfo getSkuInfoRedisson(Long skuId) {
+        //定义缓存的key sku:skuId:info
+        String skuKey = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX;
+        //定义锁的key
+        String lockKey = RedisConst.SKUKEY_PREFIX+skuId+RedisConst.SKULOCK_SUFFIX;
+        //1.先从缓存中获取数据
+        SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(skuKey);
+        //判断缓存是否有数据
+        if(skuInfo==null){
+            //没有
+            Config config = new Config();
+            config.setLockWatchdogTimeout(1000L);
+            config.useSingleServer().setAddress("redis://192.168.6.111:6379");
+            redissonClient = Redisson.create(config);
+            RLock lock = redissonClient.getLock(lockKey);
+            //2.获取上锁对象
+            //RLock lock = redissonCLient.getLock(lockKey);
+            //3.上锁
+            try {
+                //参数1:尝试获取锁的时间 参数2:设置获取到锁的过期时间
+                boolean res = lock.tryLock(1, 3, TimeUnit.SECONDS);
+                if (res) {
+                    //获取到锁
+                    //4.查询DB
+                    skuInfo = skuInfoMapper.selectById(skuId);
+                    //5.防止缓存穿透
+                    if (null == skuInfo){
+                        skuInfo = new SkuInfo();
+                        redisTemplate.opsForValue().set(skuKey,skuInfo,5,TimeUnit.MINUTES);
+
+                    }else{
+                        //查询图片
+                        List<SkuImage> skuImageList = skuImageMapper.selectList(new QueryWrapper<SkuImage>().eq("sku_id", skuId));
+                        //将image塞入skuinfo
+                        skuInfo.setSkuImageList(skuImageList);
+                        //缓存一天  防止缓存雪崩 过期时间加上一个随机时间
+                        Random random = new Random();
+                        int i = random.nextInt(10);
+                        redisTemplate.opsForValue().set(skuKey,skuInfo,RedisConst.SKUKEY_TIMEOUT+i,TimeUnit.SECONDS);
+                    }
+                }else {
+                    //没获取到锁
+                    Thread.sleep(1000);
+                    return getSkuInfoBySkuId(skuId);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                //手动解锁
+                lock.unlock();
+            }
+        }
+        //缓存不为空直接返回
+        return skuInfo;
     }
 
     /**
@@ -404,7 +488,10 @@ public class ManageServiceImpl implements ManageService {
         wrapper.eq("id",skuId);
         wrapper.select("price");
         SkuInfo skuInfo = skuInfoMapper.selectOne(wrapper);
-        return skuInfo.getPrice();
+        if (skuInfo!= null){
+            return skuInfo.getPrice();
+        }
+        return new BigDecimal(999999.9999);
     }
 
     /**
@@ -413,8 +500,12 @@ public class ManageServiceImpl implements ManageService {
      * @return
      */
     @Override
+    @GmallCache(prefix = "CategoryByCategory3Id:")
     public BaseCategoryView getCategoryByCategory3Id(Long category3Id) {
         BaseCategoryView baseCategoryView = baseCategoryViewMapper.selectById(category3Id);
+        if (baseCategoryView==null){
+            return new BaseCategoryView();
+        }
         return baseCategoryView;
     }
 
@@ -425,9 +516,15 @@ public class ManageServiceImpl implements ManageService {
      * @return
      */
     @Override
+    @GmallCache(prefix = "SpuSaleAttrListBySkuIdAndSpuId:")
     public List<SpuSaleAttr> getSpuSaleAttrListBySkuIdAndSpuId(Long skuId, Long spuId) {
+        List<SpuSaleAttr> spuSaleAttrs = spuSaleAttrMapper.selectSpuSaleAttrListBySkuIdAndSpuId(skuId, spuId);
+        if (spuSaleAttrs == null){
+            List<SpuSaleAttr> spuSaleAttrList = new ArrayList<>();
+            return spuSaleAttrList;
+        }
 
-        return spuSaleAttrMapper.selectSpuSaleAttrListBySkuIdAndSpuId(skuId,spuId);
+        return spuSaleAttrs;
     }
 
     /**
@@ -436,15 +533,20 @@ public class ManageServiceImpl implements ManageService {
      * @return
      */
     @Override
+    @GmallCache(prefix = "ValueIdsAndSkuIdToMapBySpuId:")
     public Map getValueIdsAndSkuIdToMapBySpuId(Long spuId) {
         //声明map集合
         HashMap<Object, Object> hashMap = new HashMap<>();
         //获取skuId , 属性值Ids
         List<Map> mapList = skuSaleAttrValueMapper.selectValueIdsAndSkuIdToMapBySpuId(spuId);
         //赋值
-        mapList.stream().forEach(map -> {
-            hashMap.put(map.get("value_ids"),map.get("sku_id"));
-        });
+        if (!CollectionUtils.isEmpty(mapList)){
+
+            mapList.stream().forEach(map -> {
+                hashMap.put(map.get("value_ids"),map.get("sku_id"));
+            });
+
+        }
         return hashMap;
     }
 
@@ -454,10 +556,87 @@ public class ManageServiceImpl implements ManageService {
      * @return
      */
     @Override
+    @GmallCache(prefix = "BaseAttrInfoBySkuId:")
     public List<BaseAttrInfo> getBaseAttrInfoBySkuId(Long skuId) {
-
-        return baseAttrInfoMapper.selectBaseAttrInfoBySkuId(skuId);
+        List<BaseAttrInfo> attrInfoList = baseAttrInfoMapper.selectBaseAttrInfoBySkuId(skuId);
+        if (attrInfoList == null){
+            return new ArrayList<BaseAttrInfo>();
+        }
+        return attrInfoList;
     }
 
+    @Override
+    public List<JSONObject> getBaseCategoryList() {
+        return null;
+    }
 
+    @Override
+    @GmallCache(prefix = "indexCategoryList")
+    public List<Map> getCategoryList() {
+        //获取所有三个等级分类的数据
+        List<BaseCategoryView> baseCategoryViewList = baseCategoryViewMapper.selectList(null);
+
+        List<Map> list = new ArrayList<>();
+        //将所有数据按categroup1Id分类 , 得到map集合 , key是category1Id,value是category1Id对应的数据集合
+        Map<Long, List<BaseCategoryView>> category1Map = baseCategoryViewList.stream().collect(Collectors.groupingBy(BaseCategoryView::getCategory1Id));
+
+        int index = 1;
+        //循环按1id分组的数据
+        for (Map.Entry<Long, List<BaseCategoryView>> entry1 : category1Map.entrySet()) {
+            Long category1Id = entry1.getKey();
+            List<BaseCategoryView> category1List = entry1.getValue();
+            Map map1 = new HashMap();
+            map1.put("index",index);
+            map1.put("categoryName",category1List.get(0).getCategory1Name());
+            map1.put("categoryId",category1Id);
+
+            index++;
+
+            List<Map> list2 = new ArrayList<>();
+            //将按1id分组的数据再按2id分组 得到key是category2Id,value是category2Id对应的数据集合
+            Map<Long, List<BaseCategoryView>> categoryMap2 = category1List.stream().collect(Collectors.groupingBy(BaseCategoryView::getCategory2Id));
+            for (Map.Entry<Long, List<BaseCategoryView>> entry2 : categoryMap2.entrySet()) {
+                Long category2Id = entry2.getKey();
+                List<BaseCategoryView> category2List = entry2.getValue();
+                Map map2 = new HashMap();
+                map2.put("categoryName",category2List.get(0).getCategory2Name());
+                map2.put("categoryId",category2Id);
+
+                List<Map> list3 = new ArrayList<>();
+                for (BaseCategoryView baseCategory3 : category2List) {
+                    Map map3 = new HashMap();
+                    map3.put("categoryName",baseCategory3.getCategory3Name());
+                    map3.put("categoryId",baseCategory3.getCategory3Id());
+                    list3.add(map3);
+                }
+
+                map2.put("categoryChild",list3);
+                list2.add(map2);
+            }
+
+            map1.put("categoryChild",list2);
+            list.add(map1);
+        }
+        return list;
+    }
+
+    /**
+     * 根据品牌id获取品牌数据
+     * @param tmId
+     * @return
+     */
+    @Override
+    public BaseTrademark getTrademarkByTmId(Long tmId) {
+        return baseTrademarkMapper.selectById(tmId);
+    }
+
+    /**
+     * 根据skuId获取平台属性和平台属性值
+     * 用于填充es数据
+     */
+    @Override
+    public List<SearchAttr> getSearchAttrBySkuId(Long skuId) {
+        List<SearchAttr> searchAttrList = searchAttrMapper.selectList(new QueryWrapper<SearchAttr>().eq("sku_id", skuId));
+        return searchAttrList;
+    }
 }

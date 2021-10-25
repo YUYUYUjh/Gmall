@@ -9,12 +9,19 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <packaging>jar</packaging>
     <artifactId>service_product</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>net.oschina.zcx7878</groupId>
             <artifactId>fastdfs-client-java</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yy.gmall</groupId>
+            <artifactId>rabbit_util</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 

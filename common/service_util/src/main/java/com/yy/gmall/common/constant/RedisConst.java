@@ -19,7 +19,7 @@ public class RedisConst {
 
     public static final String USER_KEY_PREFIX = "user:";
     public static final String USER_CART_KEY_SUFFIX = ":cart";
-    public static final long USER_CART_EXPIRE = 30000;
+    public static final long USER_CART_EXPIRE = 60 * 60 * 24 * 30;
 
     //用户登录
     public static final String USER_LOGIN_KEY_PREFIX = "user:login:";
@@ -35,5 +35,7 @@ public class RedisConst {
     //用户锁定时间 单位：秒
     public static final int SECKILL__TIMEOUT = 60 * 60 * 1;
 
+    //商品热度
+    public static final String HOTSCORE = "HotScore";
 
 }

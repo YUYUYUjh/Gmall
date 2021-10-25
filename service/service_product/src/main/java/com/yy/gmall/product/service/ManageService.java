@@ -1,6 +1,8 @@
 package com.yy.gmall.product.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.yy.gmall.model.list.SearchAttr;
 import com.yy.gmall.model.product.*;
 
 import java.math.BigDecimal;
@@ -135,7 +137,7 @@ public interface ManageService {
     BigDecimal getPriceBySkuId(Long skuId);
 
     /**
-     * 根据category3Id查询虚表
+     * 根据category3Id查询三表关联视图
      * @param category3Id
      * @return
      */
@@ -162,4 +164,26 @@ public interface ManageService {
      * @return
      */
     List<BaseAttrInfo> getBaseAttrInfoBySkuId(Long skuId);
+
+    /**
+     * 获取全部分类信息
+     */
+    List<JSONObject> getBaseCategoryList();
+
+    /**
+     * 首页商品分类
+     * @return
+     */
+    List<Map> getCategoryList();
+
+    /**
+     * 根据品牌id获取品牌数据
+     */
+    BaseTrademark getTrademarkByTmId(Long tmId);
+
+    /**
+     * 根据skuId获取平台属性和平台属性值
+     * 用于填充es数据
+     */
+    List<SearchAttr> getSearchAttrBySkuId(Long skuId);
 }

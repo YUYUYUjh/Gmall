@@ -13,6 +13,11 @@
 
     <modules>
         <module>service_product_client</module>
+        <module>service_item_client</module>
+        <module>service_list_client</module>
+        <module>service_cart_client</module>
+        <module>service_user_client</module>
+        <module>service_order_client</module>
     </modules>
 
     <dependencies>

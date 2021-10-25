@@ -39,6 +39,7 @@ public class CartInfo extends BaseEntity {
     private Integer isChecked = 1;
 
     // 实时价格 skuInfo.price
+    @TableField(exist = false)
     BigDecimal skuPrice;
 
     //  优惠券信息列表

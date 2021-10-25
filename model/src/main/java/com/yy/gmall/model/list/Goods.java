@@ -29,7 +29,7 @@ public class Goods {
     private Double price;
 
     //  @Field(type = FieldType.Date)   6.8.1
-    @Field(type = FieldType.Date,format = DateFormat.custom,pattern = "yyyy-MM-dd HH:mm:ss")
+    @Field(type = FieldType.Date)//,format = DateFormat.custom,pattern = "yyyy-MM-dd HH:mm:ss"
     private Date createTime; // 新品
 
     @Field(type = FieldType.Long)
@@ -67,5 +67,4 @@ public class Goods {
     // Nested 支持嵌套查询
     @Field(type = FieldType.Nested)
     private List<SearchAttr> attrs;
-
 }
