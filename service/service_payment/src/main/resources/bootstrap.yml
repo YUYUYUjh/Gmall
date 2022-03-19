@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: service-payment
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.6.111:8848
+      config:
+        server-addr: 192.168.6.111:8848
+        file-extension: yml
+        group: DEFAULT_GROUP  #配置列表group
+        namespace: 9329d08a-4058-424c-9cb9-1df8aa250847 #命名空间Id

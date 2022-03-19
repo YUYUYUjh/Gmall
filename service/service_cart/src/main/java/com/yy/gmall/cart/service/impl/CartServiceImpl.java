@@ -203,6 +203,11 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    /**
+     * 获取选中购物项集合
+     * @param userId
+     * @return
+     */
     @Override
     public List<CartInfo> getCartCheckedList(Long userId) {
         //获取id对应的redis的key

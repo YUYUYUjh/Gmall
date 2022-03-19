@@ -15,6 +15,11 @@
     <dependencies>
         <dependency>
             <groupId>com.yy.gmall</groupId>
+            <artifactId>rabbit_util</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yy.gmall</groupId>
             <artifactId>service_product_client</artifactId>
             <version>1.0</version>
         </dependency>

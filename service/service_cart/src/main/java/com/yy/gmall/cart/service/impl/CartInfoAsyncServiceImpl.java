@@ -73,5 +73,6 @@ public class CartInfoAsyncServiceImpl extends ServiceImpl<CartInfoMapper,CartInf
         cartInfoMapper.delete(new QueryWrapper<CartInfo>()
                 .eq("user_id",userIdOrTempId)
                 .eq("sku_id",skuId));
+        //mysql高级 ,  类型转换会导致索引失效  所以传入的字段和数据库的字段要保持数据一致
     }
 }

@@ -18,6 +18,7 @@
         <module>service_cart_client</module>
         <module>service_user_client</module>
         <module>service_order_client</module>
+        <module>service_activity_client</module>
     </modules>
 
     <dependencies>

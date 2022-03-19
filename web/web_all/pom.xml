@@ -15,6 +15,12 @@
     <dependencies>
         <dependency>
             <groupId>com.yy.gmall</groupId>
+            <artifactId>service_activity_client</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yy.gmall</groupId>
             <artifactId>service_item_client</artifactId>
             <version>1.0</version>
         </dependency>

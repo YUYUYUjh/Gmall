@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yy.gmall.common.cache.GmallCache;
+import com.yy.gmall.common.constant.MQConst;
 import com.yy.gmall.common.constant.RedisConst;
+import com.yy.gmall.common.service.RabbitService;
 import com.yy.gmall.model.list.SearchAttr;
 import com.yy.gmall.model.product.*;
 import com.yy.gmall.product.mapper.*;
@@ -96,6 +98,9 @@ public class ManageServiceImpl implements ManageService {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private RabbitService rabbitService;
 
     /**
      * 获取一级分类
@@ -382,8 +387,11 @@ public class ManageServiceImpl implements ManageService {
         skuInfo.setIsSale(skuInfo.ONSALE);
         skuInfoMapper.updateById(skuInfo);
 
-        //
-
+        // 商品上架之后, 将上架商品添加到索引库
+        //三个参数 1:交换机  2.RoutingKey  3.消费者需要什么传递什么
+        this.rabbitService.sendMessage(MQConst.EXCHANGE_DIRECT_GOODS,
+                MQConst.ROUTING_GOODS_UPPER,
+                skuId);
     }
 
     /**
@@ -396,6 +404,11 @@ public class ManageServiceImpl implements ManageService {
         skuInfo.setId(skuId);
         skuInfo.setIsSale(skuInfo.CANCELSALE);
         skuInfoMapper.updateById(skuInfo);
+        //商品下架时从索引库删除
+        //三个参数 1:交换机  2.RoutingKey  3.消费者需要什么传递什么
+        this.rabbitService.sendMessage(MQConst.EXCHANGE_DIRECT_GOODS,
+                MQConst.ROUTING_GOODS_LOWER,
+                skuId);
     }
 
     /**

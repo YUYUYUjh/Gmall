@@ -1,0 +1,22 @@
+JvmtiExport can_access_local_variables 1
+JvmtiExport can_hotswap_or_post_breakpoint 1
+JvmtiExport can_post_on_exceptions 1
+# 141 ciObject found
+ciMethod java/lang/System arraycopy (Ljava/lang/Object;ILjava/lang/Object;II)V 119809 1 14976 0 -1
+ciMethod java/lang/StringBuffer length ()I 1057 1 132 0 -1
+ciMethod java/lang/StringBuffer append (Ljava/lang/String;)Ljava/lang/StringBuffer; 4097 1 768 0 -1
+ciMethod java/lang/StringBuffer append (C)Ljava/lang/StringBuffer; 4097 1 54442 0 -1
+ciMethod java/lang/AbstractStringBuilder ensureCapacityInternal (I)V 4097 1 60421 0 -1
+ciMethod java/lang/AbstractStringBuilder newCapacity (I)I 4097 1 1411 0 -1
+ciMethod java/lang/AbstractStringBuilder append (Ljava/lang/String;)Ljava/lang/AbstractStringBuilder; 4097 1 3329 0 -1
+ciMethod java/lang/AbstractStringBuilder append (C)Ljava/lang/AbstractStringBuilder; 4097 1 57394 0 -1
+ciMethod java/lang/Math min (II)I 4097 1 11958 0 -1
+ciMethod java/util/Arrays copyOf ([CI)[C 4097 1 1536 0 -1
+ciMethod java/text/NumberFormat isGroupingUsed ()Z 1033 1 129 0 -1
+ciMethod java/text/DecimalFormatSymbols getZeroDigit ()C 1177 1 147 0 -1
+ciMethod java/text/DecimalFormatSymbols getGroupingSeparator ()C 1025 1 128 0 -1
+ciMethod java/text/DecimalFormatSymbols getDecimalSeparator ()C 1025 1 128 0 -1
+ciMethod java/text/DecimalFormatSymbols getMinusSign ()C 17 1 2 0 -1
+ciMethod java/text/DecimalFormatSymbols getMonetaryDecimalSeparator ()C 0 0 1 0 -1
+ciMethod java/text/DecimalFormatSymbols getExponentSeparator ()Ljava/lang/String; 0 0 1 0 -1
+ciMethod 

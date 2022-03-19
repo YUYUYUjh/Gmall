@@ -19,6 +19,9 @@
         <module>service_cart</module>
         <module>service_order</module>
         <module>service_mq</module>
+        <module>service_payment</module>
+        <module>service_task</module>
+        <module>service_activity</module>
     </modules>
 
     <dependencies>
@@ -93,6 +96,12 @@
                    <groupId>org.springframework.cloud</groupId>
                    <artifactId>spring-cloud-starter-zipkin</artifactId>
                </dependency>-->
+        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-all -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.7.17</version>
+        </dependency>
 
     </dependencies>
 

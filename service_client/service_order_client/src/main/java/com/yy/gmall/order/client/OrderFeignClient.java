@@ -19,5 +19,19 @@ public interface OrderFeignClient {
     @GetMapping("/api/order/auth/trade")
     public Map trade();
 
+    /**
+     * 查询订单信息
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/api/order/auth/getOrderInfo/{orderId}")
+    public OrderInfo getOrderInfo(@PathVariable Long orderId);
 
+    /**
+     * 查询订单信息(包含订单明细)
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/api/order/inner/getOrderInfo/{orderId}")
+    public OrderInfo getOrderInfoAndOrderDetail(@PathVariable Long orderId);
 }

@@ -27,15 +27,17 @@ public class RedisConst {
     public static final int USERKEY_TIMEOUT = 60 * 60 * 24 * 7;
 
     //秒杀商品前缀
-    public static final String SECKILL_GOODS = "seckill:goods";
-    public static final String SECKILL_ORDERS = "seckill:orders:";
-    public static final String SECKILL_ORDERS_USERS = "seckill:orders:users:";
-    public static final String SECKILL_STOCK_PREFIX = "seckill:stock:";
-    public static final String SECKILL_USER = "seckill:user:";
+    public static final String SECKILL_GOODS = "seckill:goods";  //秒杀商品 (当前秒杀商品的集合)
+    public static final String SECKILL_ORDERS = "seckill:orders:"; //秒杀资格 (秒杀结果)
+    public static final String SECKILL_ORDERS_USERS = "seckill:orders:users:"; //秒杀的订单
+    public static final String SECKILL_STOCK_PREFIX = "seckill:stock:"; //秒杀的剩余库存 防超卖的
+    public static final String SECKILL_USER = "seckill:user:"; // 秒杀的这个用户  购买量限制
     //用户锁定时间 单位：秒
     public static final int SECKILL__TIMEOUT = 60 * 60 * 1;
 
     //商品热度
     public static final String HOTSCORE = "HotScore";
+
+
 
 }

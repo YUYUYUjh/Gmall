@@ -1,5 +1,6 @@
 package com.yy.gmall.order.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yy.gmall.cart.client.CartFeignClient;
@@ -56,6 +57,11 @@ public class OrderApiController {
     @Autowired
     private ThreadPoolExecutor threadPoolExecutor;
 
+    /**
+     * 点击购物车页面的结算跳转提交订单trade页面
+     * @param request
+     * @return
+     */
     @GetMapping("/auth/trade")
     public Map<String,Object> trade(HttpServletRequest request){
 
@@ -134,7 +140,7 @@ public class OrderApiController {
         }
         //从redis查订单流水号,判断是否存在
         Object redisTradeNo = redisTemplate.opsForValue().get("tradeNo:" + tradeNo);
-        if (StringUtils.isEmpty((String) redisTradeNo)){
+        if (redisTradeNo == null){
             return Result.fail().message("请勿重复提交订单");
         }
         //走到这有订单流水号
@@ -242,4 +248,45 @@ public class OrderApiController {
         IPage<OrderInfo> orderInfoIPage = orderInfoService.getPage(pageParam,userId);
         return Result.ok(orderInfoIPage);
     }
+
+    /**
+     * 查询订单信息
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/auth/getOrderInfo/{orderId}")
+    public OrderInfo getOrderInfo(@PathVariable Long orderId){
+        OrderInfo orderInfo = orderInfoService.getOrderInfoByOrderId(orderId);
+        return orderInfo;
+    }
+    /**
+     * 查询订单信息包含订单明细
+     * @param orderId
+     * @return
+     */
+    @GetMapping("inner/getOrderInfo/{orderId}")
+    public OrderInfo getOrderInfoAndOrderDetail(@PathVariable Long orderId){
+        OrderInfo orderInfo = orderInfoService.getOrderInfo(orderId);
+        return orderInfo;
+
+    }
+
+    /**
+     * 仓库微服务发起,远程调用订单服务,要求订单微服务进行拆弹
+     */
+    @PostMapping("/orderSplit")
+    public String orderSplit(Long orderId,String wareSkuMap){
+        // 拆单：获取到的子订单集合
+        List<OrderInfo> subOrderInfoList = orderInfoService.orderSplit(orderId,wareSkuMap);
+        // 声明一个存储map的集合 返回给仓库微服务
+        ArrayList<Map> mapArrayList = new ArrayList<>();
+        // 生成子订单集合
+        for (OrderInfo orderInfo : subOrderInfoList) {
+            Map map = orderInfoService.initWareOrder(orderInfo);
+            // 添加到集合中！
+            mapArrayList.add(map);
+        }
+        return JSON.toJSONString(mapArrayList);
+    }
+
 }
