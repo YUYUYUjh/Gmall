@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
  *
  * 自定义实现类 简化开发
  */
-ppressWarnings("all")
 @Service
 public class RabbitService {
 
