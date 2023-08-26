@@ -20,7 +20,7 @@ public class HttpClientUtil {
 
     public static String doGet(String url)   {
 
-        // 创建Httpclient对象
+        // 创建Httpclient对象1
         CloseableHttpClient httpclient = HttpClients.createDefault();
         // 创建http GET请求
         HttpGet httpGet = new HttpGet(url);
