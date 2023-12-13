@@ -39,8 +39,6 @@ public class SeckillGoodsApiController {
     @Autowired
     private UserFeignClient userFeignClient;
 
-    @Autowired
-    private ProductFeignClient productFeignClient;
 
     @Autowired
     private RabbitService rabbitService;

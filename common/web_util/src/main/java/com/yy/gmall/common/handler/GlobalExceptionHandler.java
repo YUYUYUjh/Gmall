@@ -29,4 +29,8 @@ public class GlobalExceptionHandler {
     public Result error(GmallException e){
         return Result.fail(e.getMessage());
     }
+
+    public static void main(String[] args) {
+        System.out.println("qqq");
+    }
 }
